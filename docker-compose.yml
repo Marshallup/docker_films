@@ -1,0 +1,52 @@
+version: '3.9'
+
+services:
+  nginx_nestjs:
+    build:
+      context: ./nginx
+    container_name: nginx_nestjs_container
+    volumes:
+      - ./nginx/logs:/var/log/nginx
+    ports:
+      - "8000:80"
+      - "443:443"
+    depends_on:
+      - frontend_nestjs
+      - backend_nestjs
+  frontend_nestjs:
+    build:
+      context: ../frontend
+    container_name: frontend_nestjs_container
+    stdin_open: true
+    tty: true
+    volumes:
+      - ../frontend:/frontend
+      - /frontend/node_modules
+      - /frontend/.next
+    ports:
+      - "3000:3000"
+    depends_on:
+      - backend_nestjs
+  backend_nestjs:
+    build:
+      context: ../backend
+    container_name: backend_nestjs_container
+    stdin_open: true
+    tty: true
+    volumes:
+      - ../backend:/backend
+      - backend/node_modules
+    ports:
+      - "7000:7000"
+    depends_on:
+      - mongo_nestjs
+  mongo_nestjs:
+    build: 
+      context: ./mongodb
+    container_name: mongo_nestjs_container
+    restart: always
+    ports:
+      - "27033:27017"
+    volumes:
+      - ./mongodb/data:/data/dbmongo
+      - ./mongodb/config:/data/configdb
